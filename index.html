@@ -1,13 +1,1103 @@
 <!doctype html>
-<html lang="en">
+<html lang="mk">
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>My Google AI Studio App</title>
+    <title>Систем за Следење Боледувања</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/date-fns@2.30.0/cdn.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/date-fns/locale/mk/cdn.min.js"></script>
+    <style>
+      :root {
+        --font-sans: "Inter", ui-sans-serif, system-ui, sans-serif;
+        --font-serif: serif;
+        --slate-50: #f8fafc;
+        --slate-100: #f1f5f9;
+        --slate-200: #e2e8f0;
+        --slate-300: #cbd5e1;
+        --slate-400: #94a3b8;
+        --slate-500: #64748b;
+        --slate-600: #475569;
+        --slate-700: #334155;
+        --slate-900: #0f172a;
+        --emerald-50: #ecfdf5;
+        --emerald-100: #d1fae5;
+        --emerald-600: #059669;
+        --emerald-700: #047857;
+        --amber-50: #fffbeb;
+        --amber-200: #fde68a;
+        --amber-400: #fbbf24;
+        --amber-500: #f59e0b;
+        --amber-600: #d97706;
+        --amber-800: #92400e;
+        --amber-950: #451a03;
+        --blue-50: #eff6ff;
+        --blue-600: #2563eb;
+        --blue-700: #1d4ed8;
+        --red-50: #fef2f2;
+        --red-600: #dc2626;
+        --white: #ffffff;
+        --black: #000000;
+      }
+
+      body {
+        margin: 0;
+        font-family: var(--font-sans);
+        background-color: var(--slate-50);
+        color: var(--slate-900);
+        -webkit-font-smoothing: antialiased;
+        -moz-osx-font-smoothing: grayscale;
+      }
+
+      *,
+      *::before,
+      *::after {
+        box-sizing: border-box;
+      }
+
+      button, input, select {
+        font-family: inherit;
+      }
+
+      .app-container {
+        min-height: 100vh;
+        display: flex;
+        flex-direction: column;
+      }
+
+      .main-header, .main-footer {
+        background-color: var(--white);
+        border-color: var(--slate-200);
+      }
+      .main-header { border-bottom-width: 1px; position: sticky; top: 0; z-index: 10; }
+      .main-footer { border-top-width: 1px; }
+
+      .container {
+        width: 100%;
+        max-width: 80rem; /* 1280px */
+        margin-left: auto;
+        margin-right: auto;
+        padding-left: 1rem; /* 16px */
+        padding-right: 1rem; /* 16px */
+      }
+      @media (min-width: 640px) { .container { padding-left: 1.5rem; padding-right: 1.5rem; } }
+      @media (min-width: 1024px) { .container { padding-left: 2rem; padding-right: 2rem; } }
+
+      main.container { flex: 1; padding-top: 2rem; padding-bottom: 2rem; }
+
+      .header-content {
+        height: 4rem; /* 64px */
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+      }
+
+      .logo {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem; /* 8px */
+      }
+
+      .logo-icon-bg { background-color: var(--emerald-100); padding: 0.5rem; border-radius: 0.5rem; }
+      .logo-icon { width: 1.5rem; height: 1.5rem; color: var(--emerald-600); }
+      .logo-text { font-size: 1.25rem; font-weight: 700; letter-spacing: -0.025em; }
+
+      .date-badge {
+        display: none;
+        align-items: center;
+        gap: 0.25rem; /* 4px */
+        font-size: 0.875rem;
+        color: var(--slate-500);
+        background-color: var(--slate-100);
+        padding: 0.375rem 0.75rem;
+        border-radius: 9999px;
+      }
+      @media (min-width: 640px) { .date-badge { display: flex; } }
+      .date-badge svg { width: 1rem; height: 1rem; }
+
+      .stats-grid {
+        display: grid;
+        grid-template-columns: repeat(1, minmax(0, 1fr));
+        gap: 1.5rem; /* 24px */
+        margin-bottom: 2rem; /* 32px */
+      }
+      @media (min-width: 768px) { .stats-grid { grid-template-columns: repeat(3, minmax(0, 1fr)); } }
+
+      .stat-card {
+        background-color: var(--white);
+        padding: 1.5rem; /* 24px */
+        border-radius: 1rem; /* 16px */
+        border: 1px solid var(--slate-200);
+        box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1);
+      }
+      .stat-card-header { display: flex; align-items: center; justify-content: space-between; margin-bottom: 1rem; }
+      .stat-card-icon-bg { padding: 0.5rem; border-radius: 0.5rem; }
+      .stat-card-icon { width: 1.25rem; height: 1.25rem; }
+      .stat-card-title { font-size: 0.75rem; font-weight: 600; color: var(--slate-400); text-transform: uppercase; letter-spacing: 0.05em; }
+      .stat-card-value { font-size: 1.875rem; font-weight: 700; color: var(--slate-900); }
+      .stat-card-desc { font-size: 0.875rem; color: var(--slate-500); margin-top: 0.25rem; }
+
+      .controls {
+        display: flex;
+        flex-direction: column;
+        gap: 1rem;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+      }
+      @media (min-width: 640px) { .controls { flex-direction: row; } }
+
+      .tab-group { display: flex; background-color: var(--white); padding: 0.25rem; border-radius: 0.75rem; border: 1px solid var(--slate-200); width: 100%; }
+      @media (min-width: 640px) { .tab-group { width: auto; } }
+      .tab-button {
+        flex: 1;
+        padding: 0.5rem 1rem;
+        border-radius: 0.5rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        gap: 0.5rem;
+        border: none;
+        background-color: transparent;
+        cursor: pointer;
+      }
+      .tab-button.active { background-color: var(--slate-900); color: var(--white); box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1); }
+      .tab-button:not(.active) { color: var(--slate-600); }
+      .tab-button:not(.active):hover { background-color: var(--slate-50); }
+      .tab-button svg { width: 1rem; height: 1rem; }
+
+      .actions-group { display: flex; gap: 0.75rem; width: 100%; }
+      @media (min-width: 640px) { .actions-group { width: auto; } }
+      .search-wrapper { position: relative; flex: 1; }
+      @media (min-width: 640px) { .search-wrapper { width: 16rem; } }
+      .search-wrapper svg { position: absolute; left: 0.75rem; top: 50%; transform: translateY(-50%); width: 1rem; height: 1rem; color: var(--slate-400); }
+      .search-input {
+        width: 100%;
+        padding: 0.5rem 1rem 0.5rem 2.5rem;
+        background-color: var(--white);
+        border: 1px solid var(--slate-200);
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        transition: all 0.2s;
+      }
+      .search-input:focus { outline: none; box-shadow: 0 0 0 2px var(--slate-900); }
+
+      .btn {
+        padding: 0.5rem 1rem;
+        border-radius: 0.75rem;
+        font-size: 0.875rem;
+        font-weight: 500;
+        transition: all 0.2s;
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        border: none;
+        cursor: pointer;
+        box-shadow: 0 4px 6px -1px rgba(0,0,0,0.1), 0 2px 4px -2px rgba(0,0,0,0.1);
+      }
+      .btn svg { width: 1rem; height: 1rem; }
+      .btn-primary { background-color: var(--emerald-600); color: var(--white); }
+      .btn-primary:hover { background-color: var(--emerald-700); }
+      .btn-secondary { background-color: var(--amber-500); color: var(--white); }
+      .btn-secondary:hover { background-color: var(--amber-600); }
+      .btn-tertiary { background-color: var(--blue-600); color: var(--white); }
+      .btn-tertiary:hover { background-color: var(--blue-700); }
+
+      .table-container { background-color: var(--white); border-radius: 1rem; border: 1px solid var(--slate-200); box-shadow: 0 1px 3px 0 rgba(0,0,0,0.1), 0 1px 2px -1px rgba(0,0,0,0.1); overflow: hidden; }
+      .table-wrapper { overflow-x: auto; }
+      .data-table { width: 100%; text-align: left; border-collapse: collapse; }
+      .data-table th {
+        padding: 1rem 1.5rem;
+        font-size: 0.75rem;
+        font-weight: 600;
+        color: var(--slate-500);
+        text-transform: uppercase;
+        letter-spacing: 0.05em;
+        background-color: #fcfcfd;
+        border-bottom: 1px solid var(--slate-200);
+      }
+      .data-table td { padding: 1rem 1.5rem; }
+      .data-table tbody tr { transition: background-color 0.2s; }
+      .data-table tbody tr:hover { background-color: #fcfcfd; }
+      .data-table tbody { border-top: 1px solid var(--slate-100); }
+
+      .patient-cell { display: flex; align-items: center; gap: 0.75rem; }
+      .patient-avatar { width: 2.5rem; height: 2.5rem; border-radius: 9999px; background-color: var(--slate-100); display: flex; align-items: center; justify-content: center; font-weight: 600; color: var(--slate-600); }
+      .patient-name { font-weight: 500; color: var(--slate-900); }
+      .patient-parent { font-size: 0.75rem; color: var(--slate-500); }
+      .patient-age { font-size: 0.625rem; color: var(--slate-400); font-weight: 700; text-transform: uppercase; }
+
+      .diagnosis-cell, .period-cell { display: flex; flex-direction: column; gap: 0.25rem; }
+      .diagnosis-cell div, .period-cell div { display: flex; align-items: center; gap: 0.5rem; }
+      .diagnosis-cell svg, .period-cell svg { width: 1rem; height: 1rem; color: var(--slate-400); }
+      .diagnosis-code { font-size: 0.875rem; font-weight: 700; }
+      .record-number { font-size: 0.75rem; color: var(--slate-500); }
+      .period-dates { font-size: 0.875rem; color: var(--slate-700); }
+      .leave-type { font-size: 0.625rem; font-weight: 700; background-color: var(--slate-100); padding: 0.125rem 0.375rem; border-radius: 0.25rem; color: var(--slate-600); text-transform: uppercase; }
+      .overdue-indicator { animation: flash 1s infinite; font-size: 0.625rem; font-weight: 700; background-color: var(--red-600); color: var(--white); padding: 0.125rem 0.375rem; border-radius: 0.25rem; text-transform: uppercase; }
+      .due-today-indicator { font-size: 0.625rem; font-weight: 700; background-color: var(--amber-400); color: var(--amber-950); padding: 0.125rem 0.375rem; border-radius: 0.25rem; text-transform: uppercase; }
+      @keyframes flash { 50% { opacity: 0.5; } }
+
+      .docs-cell { display: flex; gap: 0.5rem; }
+      .doc-icon { padding: 0.25rem; border-radius: 0.25rem; transition: all 0.2s; }
+      .doc-icon svg { width: 1rem; height: 1rem; }
+      .doc-icon.yes { background-color: var(--emerald-50); color: var(--emerald-600); }
+      .doc-icon.no { background-color: var(--slate-50); color: var(--slate-300); }
+      .doc-icon.no-alert { background-color: var(--red-50); color: var(--red-600); }
+
+      .actions-cell { text-align: right; }
+      .actions-cell button { opacity: 0; transition: opacity 0.2s; }
+      tr:hover .actions-cell button { opacity: 1; }
+      .checkup-btn {
+        display: inline-flex; align-items: center; gap: 0.375rem; padding: 0.375rem 0.75rem;
+        border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; transition: all 0.2s;
+        border: none; cursor: pointer;
+      }
+      .checkup-btn.checked { color: var(--emerald-600); background-color: var(--emerald-50); }
+      .checkup-btn.needed { color: var(--amber-600); background-color: var(--amber-50); }
+      .checkup-btn.needed:hover { background-color: #fef3c7; }
+      .checkup-btn svg { width: 0.875rem; height: 0.875rem; }
+
+      .no-results { padding: 3rem 1.5rem; text-align: center; }
+      .no-results-content { display: flex; flex-direction: column; align-items: center; gap: 0.5rem; color: var(--slate-400); }
+      .no-results-content svg { width: 2rem; height: 2rem; opacity: 0.2; }
+
+      .modal-overlay {
+        position: fixed; inset: 0; z-index: 50; display: flex; align-items: center; justify-content: center; padding: 1rem;
+      }
+      .modal-backdrop { position: absolute; inset: 0; background-color: rgba(15, 23, 42, 0.4); backdrop-filter: blur(4px); }
+      .modal-content {
+        position: relative; background-color: var(--white); border-radius: 1rem; box-shadow: 0 25px 50px -12px rgba(0,0,0,0.25);
+        width: 100%; max-width: 42rem; max-height: 90vh; display: flex; flex-direction: column;
+        animation: modal-in 0.2s ease-out;
+      }
+      @keyframes modal-in { from { opacity: 0; transform: scale(0.95) translateY(20px); } to { opacity: 1; transform: scale(1) translateY(0); } }
+      .modal-header {
+        padding: 1rem 1.5rem; border-bottom: 1px solid var(--slate-100); display: flex; align-items: center; justify-content: space-between;
+        background-color: #fcfcfd;
+      }
+      .modal-title { font-size: 1.125rem; font-weight: 700; }
+      .modal-close-btn { padding: 0.5rem; color: var(--slate-400); border: none; background: transparent; cursor: pointer; transition: color 0.2s; }
+      .modal-close-btn:hover { color: var(--slate-600); }
+      .modal-close-btn svg { width: 1.25rem; height: 1.25rem; }
+      .modal-body { padding: 1.5rem; overflow-y: auto; display: flex; flex-direction: column; gap: 1.5rem; }
+      .modal-footer {
+        padding: 1rem 1.5rem; display: flex; gap: 0.75rem; position: sticky; bottom: 0; background-color: var(--white);
+      }
+      .btn-full { flex: 1; padding: 0.625rem 1rem; }
+      .btn-outline { background-color: transparent; border: 1px solid var(--slate-200); color: var(--slate-600); box-shadow: none; }
+      .btn-outline:hover { background-color: var(--slate-50); }
+
+      .form-section { display: grid; grid-template-columns: 1fr; gap: 1.5rem; }
+      @media (min-width: 768px) { .form-section { grid-template-columns: 1fr 1fr; } }
+      .form-group { display: flex; flex-direction: column; gap: 0.375rem; }
+      .form-label { font-size: 0.75rem; font-weight: 700; color: var(--slate-500); text-transform: uppercase; letter-spacing: 0.05em; }
+      .form-input, .form-select {
+        width: 100%; padding: 0.625rem 1rem; background-color: var(--slate-50); border: 1px solid var(--slate-200);
+        border-radius: 0.75rem; font-size: 0.875rem; transition: all 0.2s;
+      }
+      .form-input:disabled { opacity: 0.5; }
+      .form-input:focus, .form-select:focus { outline: none; border-color: var(--emerald-600); box-shadow: 0 0 0 2px rgba(5, 150, 105, 0.1); }
+      .toggle-group { display: flex; background-color: var(--slate-100); padding: 0.25rem; border-radius: 0.75rem; }
+      .toggle-btn { flex: 1; padding: 0.375rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; border: none; background: transparent; cursor: pointer; }
+      .toggle-btn.active { background-color: var(--white); color: var(--slate-900); box-shadow: 0 1px 2px 0 rgba(0,0,0,0.05); }
+      .toggle-btn:not(.active) { color: var(--slate-500); }
+
+      .toast-prompt {
+        position: fixed; bottom: 2rem; right: 2rem; z-index: 50; background-color: var(--blue-600); color: var(--white);
+        padding: 1.5rem; border-radius: 1rem; box-shadow: 0 10px 15px -3px rgba(0,0,0,0.1), 0 4px 6px -4px rgba(0,0,0,0.1);
+        display: flex; align-items: center; gap: 1rem; animation: toast-in 0.3s ease-out;
+      }
+      @keyframes toast-in { from { opacity: 0; transform: translateX(100px); } to { opacity: 1; transform: translateX(0); } }
+      .toast-icon-bg { padding: 0.5rem; background-color: rgba(255,255,255,0.2); border-radius: 0.5rem; }
+      .toast-icon-bg svg { width: 1.5rem; height: 1.5rem; }
+      .toast-title { font-weight: 700; }
+      .toast-body { font-size: 0.875rem; opacity: 0.9; }
+      .toast-actions { margin-top: 0.75rem; display: flex; gap: 0.5rem; }
+      .toast-btn { padding: 0.375rem 1rem; border-radius: 0.5rem; font-size: 0.75rem; font-weight: 700; transition: all 0.2s; border: none; cursor: pointer; }
+      .toast-btn-confirm { background-color: var(--white); color: var(--blue-600); }
+      .toast-btn-confirm:hover { background-color: var(--blue-50); }
+      .toast-btn-cancel { background-color: var(--blue-700); color: var(--white); }
+      .toast-btn-cancel:hover { background-color: #1e3a8a; }
+
+      .footer-content { padding: 1.5rem 1rem; text-align: center; }
+      .footer-text { font-size: 0.75rem; color: var(--slate-400); font-weight: 500; text-transform: uppercase; letter-spacing: 0.1em; }
+
+      /* Print Styles */
+      @media print {
+        .no-print { display: none !important; }
+        body { background: var(--white) !important; padding: 0 !important; margin: 0 !important; }
+        #root > div:not(.printable-area) { display: none !important; }
+        .printable-area { display: block !important; }
+        #printable-report {
+          display: block !important; width: 210mm; min-height: 297mm;
+          padding: 20mm !important; margin: 0 auto; background: var(--white) !important;
+          color: var(--black) !important; font-family: var(--font-serif) !important;
+        }
+        @page { size: A4; margin: 0; }
+      }
+    </style>
   </head>
   <body>
     <div id="root"></div>
-    <script type="module" src="/src/main.tsx"></script>
+    <div id="modal-root"></div>
+    <div id="toast-root"></div>
+
+    <script>
+      // --- DEPENDENCIES ---
+      const { format, parseISO, isSameDay, addDays, startOfDay } = dateFns;
+      const { mk } = dateFns.locales;
+
+      // --- ICONS (Lucide SVGs) ---
+      const ICONS = {
+        activity: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 12h-4l-3 9L9 3l-3 9H2"/></svg>`,
+        plus: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14"/><path d="M12 5v14"/></svg>`,
+        history: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"/><path d="M3 3v5h5"/></svg>`,
+        checkCircle2: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22c5.523 0 10-4.477 10-10S17.523 2 12 2 2 6.477 2 12s4.477 10 10 10z"/><path d="m9 12 2 2 4-4"/></svg>`,
+        calendar: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="18" height="18" x="3" y="4" rx="2" ry="2"/><line x1="16" x2="16" y1="2" y2="6"/><line x1="8" x2="8" y1="2" y2="6"/><line x1="3" x2="21" y1="10" y2="10"/></svg>`,
+        search: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><path d="m21 21-4.3-4.3"/></svg>`,
+        clock: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>`,
+        x: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18"/><path d="m6 6 12 12"/></svg>`,
+        fileText: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M14.5 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7.5L14.5 2z"/><polyline points="14 2 14 8 20 8"/><line x1="16" x2="8" y1="13" y2="13"/><line x1="16" x2="8" y1="17" y2="17"/><line x1="10" x2="8" y1="9" y2="9"/></svg>`,
+        building2: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 22V4a2 2 0 0 1 2-2h8a2 2 0 0 1 2 2v18"/><path d="M6 12H4a2 2 0 0 0-2 2v6a2 2 0 0 0 2 2h2"/><path d="M18 9h2a2 2 0 0 1 2 2v9a2 2 0 0 1-2 2h-2"/><path d="M10 6h4"/><path d="M10 10h4"/><path d="M10 14h4"/><path d="M10 18h4"/></svg>`,
+        beaker: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4.5 3h15"/><path d="M6 3v16a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2V3"/><path d="M6 14h12"/></svg>`,
+        clipboardCheck: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect width="8" height="4" x="8" y="2" rx="1" ry="1"/><path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2"/><path d="m9 14 2 2 4-4"/></svg>`,
+        bell: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/></svg>`,
+        printer: `<svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9V2h12v7"/><path d="M6 18H4a2 2 0 0 1-2-2v-5a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v5a2 2 0 0 1-2 2h-2"/><path d="M6 14h12v8H6z"/></svg>`,
+      };
+
+      // --- APPLICATION STATE ---
+      let state = {
+        sickLeaves: [],
+        activeTab: 'active',
+        isModalOpen: false,
+        isCheckModalOpen: false,
+        isSearchKartonModalOpen: false,
+        isReportModalOpen: false,
+        showReportPrompt: false,
+        searchKartonValue: '',
+        searchKartonError: '',
+        selectedLeaveId: null,
+        searchQuery: '',
+        formData: {},
+      };
+
+      const defaultFormData = {
+        medicalRecordNumber: '',
+        parentName: '',
+        childName: '',
+        ageCategory: 'under_3',
+        diagnosisCode: '',
+        secondaryDiagnosisCode: '',
+        leaveType: '7_days',
+        openingDoctor: '169501',
+        closingDoctor: '169501',
+        hasLabResults: false,
+        hasSpecialistReport: false,
+        hasConsiliaryReport: false,
+        hasHospitalDays: false,
+        hospitalDaysFrom: '',
+        hospitalDaysTo: '',
+        startDate: format(new Date(), 'yyyy-MM-dd'),
+        closeSickLeave: false,
+        endDate: format(new Date(), 'yyyy-MM-dd'),
+      };
+
+      // --- STATE MANAGEMENT ---
+      function setState(newState) {
+        state = { ...state, ...newState };
+        window.requestAnimationFrame(render);
+      }
+
+      // --- INITIAL DATA ---
+      function loadInitialData() {
+        const initialData = [
+          {
+            id: '1',
+            medicalRecordNumber: '12345',
+            parentName: 'Марко Петровски',
+            childName: 'Петар Петровски',
+            ageCategory: 'under_3',
+            diagnosisCode: 'J06.9',
+            leaveType: '7_days',
+            openingDoctor: '169501',
+            hasLabResults: true,
+            hasSpecialistReport: false,
+            hasHospitalDays: false,
+            status: 'active',
+            startDate: '2024-02-15',
+            lastCheckedDate: format(addDays(new Date(), -2), 'yyyy-MM-dd'),
+            createdAt: '2024-02-15T10:00:00Z'
+          },
+          {
+            id: '2',
+            medicalRecordNumber: '67890',
+            parentName: 'Елена Стојановска',
+            childName: 'Ана Стојановска',
+            ageCategory: 'over_3',
+            diagnosisCode: 'Z74',
+            secondaryDiagnosisCode: 'R50.9',
+            leaveType: '15_days',
+            openingDoctor: '330825',
+            hasLabResults: true,
+            hasSpecialistReport: true,
+            hasHospitalDays: true,
+            hospitalDaysFrom: '2024-02-10',
+            hospitalDaysTo: '2024-02-12',
+            status: 'active',
+            startDate: format(addDays(new Date(), -16), 'yyyy-MM-dd'),
+            lastCheckedDate: format(new Date(), 'yyyy-MM-dd'),
+            createdAt: '2024-02-10T09:30:00Z'
+          },
+          {
+            id: '3',
+            medicalRecordNumber: '54321',
+            parentName: 'Зоран Заев',
+            childName: 'Филип Заев',
+            ageCategory: 'over_3',
+            diagnosisCode: 'A09',
+            leaveType: '7_days',
+            openingDoctor: '169501',
+            hasLabResults: false,
+            hasSpecialistReport: false,
+            hasHospitalDays: false,
+            status: 'active',
+            startDate: format(addDays(new Date(), -7), 'yyyy-MM-dd'),
+            lastCheckedDate: format(addDays(new Date(), -1), 'yyyy-MM-dd'),
+            createdAt: format(addDays(new Date(), -7), 'yyyy-MM-dd') + 'T11:00:00Z'
+          }
+        ];
+        setState({ sickLeaves: initialData, formData: defaultFormData });
+      }
+
+      // --- EVENT HANDLERS ---
+      function handleOpenAddModal() {
+        setState({ formData: defaultFormData, isModalOpen: true });
+      }
+
+      function handleOpenCheckModal(leaveId) {
+        const leave = state.sickLeaves.find(s => s.id === leaveId);
+        if (!leave) return;
+        setState({
+          selectedLeaveId: leaveId,
+          formData: {
+            medicalRecordNumber: leave.medicalRecordNumber,
+            parentName: leave.parentName,
+            childName: leave.childName,
+            ageCategory: leave.ageCategory,
+            diagnosisCode: leave.diagnosisCode,
+            secondaryDiagnosisCode: leave.secondaryDiagnosisCode || '',
+            leaveType: leave.leaveType,
+            openingDoctor: leave.openingDoctor,
+            closingDoctor: leave.closingDoctor || '169501',
+            hasLabResults: leave.hasLabResults,
+            hasSpecialistReport: leave.hasSpecialistReport,
+            hasConsiliaryReport: leave.hasConsiliaryReport || false,
+            hasHospitalDays: leave.hasHospitalDays,
+            hospitalDaysFrom: leave.hospitalDaysFrom || '',
+            hospitalDaysTo: leave.hospitalDaysTo || '',
+            startDate: leave.startDate,
+            closeSickLeave: false,
+            endDate: format(new Date(), 'yyyy-MM-dd'),
+          },
+          isCheckModalOpen: true,
+          isSearchKartonModalOpen: false,
+          searchKartonValue: '',
+          searchKartonError: '',
+        });
+      }
+
+      function handleSearchKarton(e) {
+        e.preventDefault();
+        const leave = state.sickLeaves.find(s => s.medicalRecordNumber === state.searchKartonValue && s.status === 'active');
+        if (leave) {
+          handleOpenCheckModal(leave.id);
+        } else {
+          setState({ searchKartonError: 'Не е пронајдено активно боледување со овој број на картон.' });
+        }
+      }
+
+      function handleSaveSickLeave(e) {
+        e.preventDefault();
+        const fd = state.formData;
+        const newLeave = {
+          id: Math.random().toString(36).substr(2, 9),
+          medicalRecordNumber: fd.medicalRecordNumber,
+          parentName: fd.parentName,
+          childName: fd.childName,
+          ageCategory: fd.ageCategory,
+          diagnosisCode: fd.diagnosisCode,
+          secondaryDiagnosisCode: fd.diagnosisCode === 'Z74' ? fd.secondaryDiagnosisCode : undefined,
+          leaveType: fd.leaveType,
+          openingDoctor: fd.openingDoctor,
+          hasLabResults: fd.hasLabResults,
+          hasSpecialistReport: fd.hasSpecialistReport,
+          hasConsiliaryReport: fd.leaveType === 'commission' ? fd.hasConsiliaryReport : undefined,
+          hasHospitalDays: fd.hasHospitalDays,
+          hospitalDaysFrom: fd.hasHospitalDays ? fd.hospitalDaysFrom : undefined,
+          hospitalDaysTo: fd.hasHospitalDays ? fd.hospitalDaysTo : undefined,
+          status: 'active',
+          startDate: fd.startDate,
+          createdAt: new Date().toISOString(),
+        };
+        setState({ sickLeaves: [newLeave, ...state.sickLeaves], isModalOpen: false });
+      }
+
+      function handleDailyCheck(e) {
+        e.preventDefault();
+        if (!state.selectedLeaveId) return;
+        const fd = state.formData;
+        const updatedSickLeaves = state.sickLeaves.map(item => {
+          if (item.id === state.selectedLeaveId) {
+            return {
+              ...item,
+              medicalRecordNumber: fd.medicalRecordNumber,
+              diagnosisCode: fd.diagnosisCode,
+              secondaryDiagnosisCode: fd.diagnosisCode === 'Z74' ? fd.secondaryDiagnosisCode : undefined,
+              leaveType: fd.leaveType,
+              openingDoctor: fd.openingDoctor,
+              closingDoctor: fd.closeSickLeave ? fd.closingDoctor : item.closingDoctor,
+              hasLabResults: fd.hasLabResults,
+              hasSpecialistReport: fd.hasSpecialistReport,
+              hasConsiliaryReport: fd.leaveType === 'commission' ? fd.hasConsiliaryReport : item.hasConsiliaryReport,
+              hasHospitalDays: fd.hasHospitalDays,
+              hospitalDaysFrom: fd.hasHospitalDays ? fd.hospitalDaysFrom : undefined,
+              hospitalDaysTo: fd.hasHospitalDays ? fd.hospitalDaysTo : undefined,
+              lastCheckedDate: format(new Date(), 'yyyy-MM-dd'),
+              status: fd.closeSickLeave ? 'completed' : 'active',
+              endDate: fd.closeSickLeave ? fd.endDate : item.endDate,
+            };
+          }
+          return item;
+        });
+        setState({ sickLeaves: updatedSickLeaves, isCheckModalOpen: false, selectedLeaveId: null });
+      }
+
+      function handleFormDataChange(field, value) {
+        const newFormData = { ...state.formData, [field]: value };
+        if (field === 'searchKartonValue') {
+          setState({ searchKartonValue: value, searchKartonError: '' });
+        } else {
+          setState({ formData: newFormData });
+        }
+      }
+
+      function closeModal() {
+        setState({ isModalOpen: false, isCheckModalOpen: false, isSearchKartonModalOpen: false, isReportModalOpen: false });
+      }
+
+      // --- RENDER LOGIC ---
+      const root = document.getElementById('root');
+      const modalRoot = document.getElementById('modal-root');
+      const toastRoot = document.getElementById('toast-root');
+
+      function render() {
+        const { sickLeaves, activeTab, searchQuery, selectedLeaveId, formData, searchKartonError, searchKartonValue } = state;
+        const selectedLeave = sickLeaves.find(s => s.id === selectedLeaveId);
+
+        const filteredLeaves = sickLeaves.filter(item => {
+          const matchesTab = activeTab === 'active' ? item.status === 'active' : item.status === 'completed';
+          const matchesSearch = searchQuery ? (item.parentName.toLowerCase().includes(searchQuery.toLowerCase()) || 
+                               item.childName.toLowerCase().includes(searchQuery.toLowerCase()) ||
+                               item.medicalRecordNumber.includes(searchQuery)) : true;
+          return matchesTab && matchesSearch;
+        });
+
+        const stats = (() => {
+          const active = sickLeaves.filter(s => s.status === 'active').length;
+          const completed = sickLeaves.filter(s => s.status === 'completed').length;
+          const checkedToday = sickLeaves.filter(s => s.status === 'active' && s.lastCheckedDate === format(new Date(), 'yyyy-MM-dd')).length;
+          return { active, completed, checkedToday };
+        })();
+
+        const allChecksDone = (() => {
+          const activeLeaves = sickLeaves.filter(s => s.status === 'active');
+          if (activeLeaves.length === 0) return false;
+          return activeLeaves.every(s => s.lastCheckedDate === format(new Date(), 'yyyy-MM-dd'));
+        })();
+
+        const mainContentHTML = `
+          <div class="stats-grid">
+            <!-- Stat cards here -->
+          </div>
+          <div class="controls">
+            <!-- Controls here -->
+          </div>
+          <div class="table-container">
+            <div class="table-wrapper">
+              <table class="data-table">
+                <thead>${renderTableHead()}</thead>
+                <tbody>${filteredLeaves.map(renderTableRow).join('') || renderNoResults()}</tbody>
+              </table>
+            </div>
+          </div>
+        `;
+
+        root.innerHTML = `
+          <div class="app-container">
+            <header class="main-header no-print">
+              <div class="container">
+                <div class="header-content">
+                  <div class="logo">
+                    <div class="logo-icon-bg">${ICONS.activity}</div>
+                    <h1 class="logo-text">МедТрак МК</h1>
+                  </div>
+                  <div class="date-badge">
+                    ${ICONS.calendar}<span>${format(new Date(), 'EEEE, d MMMM', { locale: mk })}</span>
+                  </div>
+                </div>
+              </div>
+            </header>
+            <main class="container no-print">
+              ${mainContentHTML.replace('<!-- Stat cards here -->', renderStats(stats)).replace('<!-- Controls here -->', renderControls(allChecksDone))}
+            </main>
+            <footer class="main-footer no-print">
+              <div class="container">
+                <div class="footer-content">
+                  <p class="footer-text">Систем за управување со боледувања • 2024</p>
+                </div>
+              </div>
+            </footer>
+          </div>
+          <div class="printable-area"></div>
+        `;
+
+        renderModals(formData, selectedLeave, searchKartonError, searchKartonValue, sickLeaves);
+        renderToasts(allChecksDone);
+      }
+
+      function renderStats(stats) {
+        return `
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon-bg" style="background-color: var(--blue-50)">${ICONS.activity.replace('currentColor', 'var(--blue-600)')}</div>
+              <span class="stat-card-title">Активни</span>
+            </div>
+            <div class="stat-card-value">${stats.active}</div>
+            <p class="stat-card-desc">Тековни боледувања</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon-bg" style="background-color: var(--emerald-50)">${ICONS.checkCircle2.replace('currentColor', 'var(--emerald-600)')}</div>
+              <span class="stat-card-title">Завршени</span>
+            </div>
+            <div class="stat-card-value">${stats.completed}</div>
+            <p class="stat-card-desc">Вкупно издадени досега</p>
+          </div>
+          <div class="stat-card">
+            <div class="stat-card-header">
+              <div class="stat-card-icon-bg" style="background-color: var(--amber-50)">${ICONS.clock.replace('currentColor', 'var(--amber-600)')}</div>
+              <span class="stat-card-title">Денешна Проверка</span>
+            </div>
+            <div class="stat-card-value">${stats.checkedToday}/${stats.active}</div>
+            <p class="stat-card-desc">Проверени пациенти денес</p>
+          </div>
+        `;
+      }
+
+      function renderControls(allChecksDone) {
+        return `
+          <div class="tab-group">
+            <button class="tab-button ${state.activeTab === 'active' ? 'active' : ''}" data-action="change-tab" data-value="active">${ICONS.activity} Активни</button>
+            <button class="tab-button ${state.activeTab === 'history' ? 'active' : ''}" data-action="change-tab" data-value="history">${ICONS.history} Издадени</button>
+          </div>
+          <div class="actions-group">
+            <div class="search-wrapper">
+              ${ICONS.search}
+              <input type="text" class="search-input" placeholder="Пребарај (Име, Картон)..." value="${state.searchQuery}" data-field="searchQuery">
+            </div>
+            <button class="btn btn-secondary" data-action="open-search-karton-modal">${ICONS.clock} Нова Проверка</button>
+            ${allChecksDone ? `<button class="btn btn-tertiary" data-action="open-report-modal">${ICONS.printer} Дневен Извештај</button>` : ''}
+            <button class="btn btn-primary" data-action="open-add-modal">${ICONS.plus} Ново Боледување</button>
+          </div>
+        `;
+      }
+
+      function renderTableHead() {
+        return `
+          <tr>
+            <th>Пациент / Дете</th>
+            <th>Дијагноза / Картон</th>
+            <th>Тип / Период</th>
+            <th>Документација</th>
+            ${state.activeTab === 'active' ? '<th style="text-align: right;">Акции</th>' : ''}
+          </tr>
+        `;
+      }
+
+      function renderTableRow(item) {
+        const today = format(new Date(), 'yyyy-MM-dd');
+        const isCheckedToday = item.lastCheckedDate === today;
+
+        let duration = 0;
+        if (item.leaveType === '7_days') duration = 7;
+        else if (item.leaveType === '15_days') duration = 15;
+
+        let statusIndicator = '';
+        if (item.status === 'active' && duration > 0) {
+          const expectedEndDate = addDays(parseISO(item.startDate), duration);
+          const todayDate = startOfDay(new Date());
+          const targetDate = startOfDay(expectedEndDate);
+          if (isSameDay(todayDate, targetDate)) {
+            statusIndicator = `<span class="due-today-indicator">ЗА ИЗДАВАЊЕ ДЕНЕС</span>`;
+          } else if (todayDate > targetDate) {
+            statusIndicator = `<span class="overdue-indicator">ДОЦНИ</span>`;
+          }
+        }
+
+        return `
+          <tr>
+            <td>
+              <div class="patient-cell">
+                <div class="patient-avatar">${item.childName.charAt(0)}</div>
+                <div>
+                  <div class="patient-name">${item.childName}</div>
+                  <div class="patient-parent">Родител: ${item.parentName}</div>
+                  <div class="patient-age">${item.ageCategory === 'under_3' ? 'Под 3 години' : 'Над 3 години'}</div>
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="diagnosis-cell">
+                <div>
+                  ${ICONS.clipboardCheck.replace('class="', 'class="w-4 h-4 text-slate-400" ')}
+                  <span class="diagnosis-code">${item.diagnosisCode}${item.secondaryDiagnosisCode ? ` и ${item.secondaryDiagnosisCode}` : ''}</span>
+                </div>
+                <div class="record-number">Картон: ${item.medicalRecordNumber}</div>
+              </div>
+            </td>
+            <td>
+              <div class="period-cell">
+                <div>
+                  ${ICONS.calendar.replace('class="', 'class="w-4 h-4 text-slate-400" ')}
+                  <span class="period-dates">${format(parseISO(item.startDate), 'dd.MM.yyyy')}${item.endDate ? ` - ${format(parseISO(item.endDate), 'dd.MM.yyyy')}` : ''}</span>
+                </div>
+                <div style="gap: 0.5rem;">
+                  <span class="leave-type">${item.leaveType === '7_days' ? '7 дена' : item.leaveType === '15_days' ? '15 дена' : 'Комисија'}</span>
+                  ${statusIndicator}
+                </div>
+              </div>
+            </td>
+            <td>
+              <div class="docs-cell">
+                <div title="Лабораторија" class="doc-icon ${item.hasLabResults ? 'yes' : 'no-alert'}">${ICONS.beaker}</div>
+                <div title="Специјалистички извештај" class="doc-icon ${item.hasSpecialistReport ? 'yes' : (item.leaveType !== '7_days' ? 'no-alert' : 'no')}">${ICONS.clipboardCheck}</div>
+                ${item.leaveType === 'commission' ? `<div title="Конзилијарно мислење" class="doc-icon ${item.hasConsiliaryReport ? 'yes' : 'no-alert'}">${ICONS.fileText}</div>` : ''}
+                <div title="Болнички денови" class="doc-icon ${item.hasHospitalDays ? 'yes' : 'no'}">${ICONS.building2}</div>
+              </div>
+            </td>
+            ${state.activeTab === 'active' ? `
+            <td class="actions-cell">
+              <button class="checkup-btn ${isCheckedToday ? 'checked' : 'needed'}" data-action="open-check-modal" data-value="${item.id}">
+                ${ICONS.clock} ${isCheckedToday ? 'Проверено' : 'Дневна Проверка'}
+              </button>
+            </td>` : ''}
+          </tr>
+        `;
+      }
+
+      function renderNoResults() {
+        return `
+          <tr>
+            <td colspan="5" class="no-results">
+              <div class="no-results-content">
+                ${ICONS.search}
+                <p>Нема пронајдено боледувања</p>
+              </div>
+            </td>
+          </tr>
+        `;
+      }
+
+      function renderModals(formData, selectedLeave, searchKartonError, searchKartonValue, sickLeaves) {
+        let modalHTML = '';
+        if (state.isModalOpen || state.isCheckModalOpen) {
+          modalHTML += renderAddCheckModal(formData, selectedLeave);
+        }
+        if (state.isSearchKartonModalOpen) {
+          modalHTML += renderSearchKartonModal(searchKartonValue, searchKartonError);
+        }
+        if (state.isReportModalOpen) {
+          const reportData = sickLeaves.filter(s => s.lastCheckedDate === format(new Date(), 'yyyy-MM-dd'));
+          renderReportForPrinting(reportData);
+          modalHTML += renderReportModal(reportData);
+        }
+        modalRoot.innerHTML = modalHTML;
+      }
+
+      function renderAddCheckModal(formData, selectedLeave) {
+        const isCheck = state.isCheckModalOpen;
+        const title = isCheck ? `Дневна Проверка: ${selectedLeave?.childName}` : 'Ново Боледување';
+        return `
+          <div class="modal-overlay">
+            <div class="modal-backdrop" data-action="close-modal"></div>
+            <div class="modal-content">
+              <div class="modal-header">
+                <h3 class="modal-title">${title}</h3>
+                <button class="modal-close-btn" data-action="close-modal">${ICONS.x}</button>
+              </div>
+              <form id="${isCheck ? 'check-form' : 'add-form'}" class="modal-body">
+                <!-- Form content here -->
+                ${renderFormContent(formData, isCheck)}
+              </form>
+              <div class="modal-footer">
+                  <button type="button" class="btn btn-full btn-outline" data-action="close-modal">Откажи</button>
+                  <button type="submit" form="${isCheck ? 'check-form' : 'add-form'}" class="btn btn-full btn-primary">${isCheck ? 'Потврди Проверка' : 'Зачувај'}</button>
+              </div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderSearchKartonModal(value, error) {
+        return `
+          <div class="modal-overlay">
+            <div class="modal-backdrop" data-action="close-modal"></div>
+            <div class="modal-content" style="max-width: 28rem;">
+              <div class="modal-header">
+                <h3 class="modal-title">Нова Проверка</h3>
+                <button class="modal-close-btn" data-action="close-modal">${ICONS.x}</button>
+              </div>
+              <form id="search-karton-form" class="modal-body" style="gap: 1rem;">
+                <div class="form-group">
+                  <label class="form-label">Внесете број на картон</label>
+                  <input type="number" class="form-input" value="${value}" data-field="searchKartonValue" placeholder="Пр. 12345" required autofocus>
+                  ${error ? `<p style="font-size: 0.75rem; color: var(--red-600);">${error}</p>` : ''}
+                </div>
+                <div class="pt-2 flex gap-3">
+                  <button type="button" class="btn btn-full btn-outline" data-action="close-modal">Откажи</button>
+                  <button type="submit" class="btn btn-full btn-secondary">Пребарај</button>
+                </div>
+              </form>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderReportModal(reportData) {
+        return `
+          <div class="modal-overlay no-print">
+            <div class="modal-backdrop" data-action="close-modal"></div>
+            <div class="modal-content" style="max-width: 56rem;">
+              <div class="modal-header">
+                <h3 class="modal-title">Дневен Извештај</h3>
+                <div style="display: flex; gap: 0.5rem;">
+                  <button class="btn btn-primary" data-action="print-report">${ICONS.printer} Печати (A4)</button>
+                  <button class="modal-close-btn" data-action="close-modal">${ICONS.x}</button>
+                </div>
+              </div>
+              <div class="modal-body" id="report-content-container"></div>
+            </div>
+          </div>
+        `;
+      }
+
+      function renderReportForPrinting(reportData) {
+        const printableContainer = document.querySelector('.printable-area');
+        const reportContentContainer = document.getElementById('report-content-container');
+        
+        const reportHTML = `
+          <div id="printable-report">
+            <div style="text-align: center; margin-bottom: 3rem; border-bottom: 2px solid black; padding-bottom: 1.5rem;">
+              <h1 style="font-size: 1.5rem; font-weight: 700; text-transform: uppercase; margin-bottom: 0.5rem;">Дневен Извештај за Боледувања</h1>
+              <p style="font-size: 1.125rem;">Датум: ${format(new Date(), 'dd.MM.yyyy')}</p>
+            </div>
+            <div style="display: flex; flex-direction: column; gap: 2rem;">
+              ${reportData.map((leave, idx) => `
+                <div style="border-bottom: 1px solid #e2e8f0; padding-bottom: 1.5rem;">
+                  <h2 style="font-size: 1.25rem; font-weight: 700; margin-bottom: 1rem;">${idx + 1}. Пациент: ${leave.childName}</h2>
+                  <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 0.5rem 3rem; font-size: 0.875rem;">
+                    <p><strong>Број на картон:</strong> ${leave.medicalRecordNumber}</p>
+                    <p><strong>Родител:</strong> ${leave.parentName}</p>
+                    <p><strong>Возраст:</strong> ${leave.ageCategory === 'under_3' ? 'Под 3 години' : 'Над 3 години'}</p>
+                    <p><strong>Дијагноза:</strong> ${leave.diagnosisCode}${leave.secondaryDiagnosisCode ? ` и ${leave.secondaryDiagnosisCode}` : ''}</p>
+                    <p><strong>Тип:</strong> ${leave.leaveType === '7_days' ? '7 дена' : leave.leaveType === '15_days' ? '15 дена' : 'Комисија'}</p>
+                    <p><strong>Доктор (Отвора):</strong> ${leave.openingDoctor}</p>
+                    ${leave.status === 'completed' ? `<p><strong>Доктор (Затвора):</strong> ${leave.closingDoctor}</p>` : ''}
+                    <p><strong>Датум на почеток:</strong> ${format(parseISO(leave.startDate), 'dd.MM.yyyy')}</p>
+                    ${leave.endDate ? `<p><strong>Датум на крај:</strong> ${format(parseISO(leave.endDate), 'dd.MM.yyyy')}</p>` : ''}
+                    <p><strong>Лабораторија:</strong> ${leave.hasLabResults ? 'ДА' : 'НЕ'}</p>
+                    <p><strong>Спец. Извештај:</strong> ${leave.hasSpecialistReport ? 'ДА' : 'НЕ'}</p>
+                    ${leave.leaveType === 'commission' ? `<p><strong>Конзилијарно мислење:</strong> ${leave.hasConsiliaryReport ? 'ДА' : 'НЕ'}</p>` : ''}
+                    <p><strong>Болнички денови:</strong> ${leave.hasHospitalDays ? `ДА (${leave.hospitalDaysFrom} до ${leave.hospitalDaysTo})` : 'НЕ'}</p>
+                    <p><strong>Статус:</strong> ${leave.status === 'active' ? 'АКТИВНО' : 'ЗАВРШЕНО'}</p>
+                  </div>
+                </div>
+              `).join('')}
+            </div>
+            <div style="margin-top: 6rem; display: flex; justify-content: space-between; padding: 0 3rem; font-style: italic; font-size: 0.875rem;">
+              <div style="text-align: center; border-top: 1px solid black; padding-top: 0.5rem; width: 12rem;">Потпис на доктор</div>
+              <div style="text-align: center; border-top: 1px solid black; padding-top: 0.5rem; width: 12rem;">Печат</div>
+            </div>
+          </div>
+        `;
+        printableContainer.innerHTML = reportHTML;
+        if(reportContentContainer) reportContentContainer.innerHTML = reportHTML;
+      }
+
+      function renderFormContent(formData, isCheck) {
+        return `
+          <div class="form-section">
+            <div class="form-group">
+              <label class="form-label">Број на картон</label>
+              <input type="number" class="form-input" value="${formData.medicalRecordNumber}" data-field="medicalRecordNumber" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Возраст на дете</label>
+              <div class="toggle-group">
+                <button type="button" class="toggle-btn ${formData.ageCategory === 'under_3' ? 'active' : ''}" data-action="toggle-form-boolean" data-value="ageCategory" onclick="this.dataset.value = 'under_3'; handleFormDataChange('ageCategory', 'under_3')">Под 3 год.</button>
+                <button type="button" class="toggle-btn ${formData.ageCategory === 'over_3' ? 'active' : ''}" data-action="toggle-form-boolean" data-value="ageCategory" onclick="this.dataset.value = 'over_3'; handleFormDataChange('ageCategory', 'over_3')">Над 3 год.</button>
+              </div>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-group">
+              <label class="form-label">Име и презиме на родител</label>
+              <input type="text" class="form-input" value="${formData.parentName}" data-field="parentName" ${isCheck ? 'disabled' : ''} required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Име и презиме на дете</label>
+              <input type="text" class="form-input" value="${formData.childName}" data-field="childName" ${isCheck ? 'disabled' : ''} required>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--slate-100);"></div>
+          <div class="form-section">
+            <div class="form-group">
+              <label class="form-label">Шифра на дијагноза</label>
+              <div style="display:flex; gap: 0.5rem;">
+                <input type="text" class="form-input" value="${formData.diagnosisCode}" data-field="diagnosisCode" required>
+                ${formData.diagnosisCode === 'Z74' ? `<input type="text" class="form-input" value="${formData.secondaryDiagnosisCode}" data-field="secondaryDiagnosisCode" placeholder="Дополнителна..." required>` : ''}
+              </div>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Тип на боледување</label>
+              <select class="form-select" data-field="leaveType">
+                <option value="7_days" ${formData.leaveType === '7_days' ? 'selected' : ''}>7 дена</option>
+                <option value="15_days" ${formData.leaveType === '15_days' ? 'selected' : ''}>15 дена</option>
+                <option value="commission" ${formData.leaveType === 'commission' ? 'selected' : ''}>Продолжување со комисија</option>
+              </select>
+            </div>
+          </div>
+          <div class="form-section">
+            <div class="form-group">
+              <label class="form-label">Доктор (Факсимил)</label>
+              <select class="form-select" data-field="openingDoctor">
+                <option value="169501" ${formData.openingDoctor === '169501' ? 'selected' : ''}>169501</option>
+                <option value="330825" ${formData.openingDoctor === '330825' ? 'selected' : ''}>330825</option>
+              </select>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Датум на почеток</label>
+              <input type="date" class="form-input" value="${formData.startDate}" data-field="startDate" required>
+            </div>
+          </div>
+          <div style="border-top: 1px solid var(--slate-100);"></div>
+          <div class="form-section" style="grid-template-columns: repeat(4, 1fr);">
+            <!-- Toggles for docs -->
+          </div>
+          ${formData.hasHospitalDays ? `
+          <div class="form-section">
+            <div class="form-group">
+              <label class="form-label">Болнички од</label>
+              <input type="date" class="form-input" value="${formData.hospitalDaysFrom}" data-field="hospitalDaysFrom" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Болнички до</label>
+              <input type="date" class="form-input" value="${formData.hospitalDaysTo}" data-field="hospitalDaysTo" required>
+            </div>
+          </div>` : ''}
+          ${isCheck ? `
+          <div style="border-top: 1px solid var(--slate-100);"></div>
+          <div class="form-group">
+            <label class="form-label">Затвори боледување</label>
+            <div class="toggle-group">
+              <button type="button" class="toggle-btn ${formData.closeSickLeave ? 'active' : ''}" onclick="handleFormDataChange('closeSickLeave', true)">ДА</button>
+              <button type="button" class="toggle-btn ${!formData.closeSickLeave ? 'active' : ''}" onclick="handleFormDataChange('closeSickLeave', false)">НЕ</button>
+            </div>
+          </div>
+          ${formData.closeSickLeave ? `
+          <div class="form-section">
+            <div class="form-group">
+              <label class="form-label">Краен датум</label>
+              <input type="date" class="form-input" value="${formData.endDate}" data-field="endDate" required>
+            </div>
+            <div class="form-group">
+              <label class="form-label">Доктор (Затвора)</label>
+              <select class="form-select" data-field="closingDoctor">
+                <option value="169501" ${formData.closingDoctor === '169501' ? 'selected' : ''}>169501</option>
+                <option value="330825" ${formData.closingDoctor === '330825' ? 'selected' : ''}>330825</option>
+              </select>
+            </div>
+          </div>` : ''}
+          ` : ''}
+        `;
+      }
+
+      function renderToasts(allChecksDone) {
+        let toastHTML = '';
+        if (state.showReportPrompt && allChecksDone) {
+          toastHTML = `
+            <div class="toast-prompt">
+              <div class="toast-icon-bg">${ICONS.clipboardCheck}</div>
+              <div>
+                <p class="toast-title">Сите проверки се завршени!</p>
+                <p class="toast-body">Дали сакате да генерирате дневен извештај?</p>
+                <div class="toast-actions">
+                  <button class="toast-btn toast-btn-confirm" data-action="open-report-modal">Генерирај</button>
+                  <button class="toast-btn toast-btn-cancel" data-action="close-toast">Затвори</button>
+                </div>
+              </div>
+            </div>
+          `;
+        }
+        toastRoot.innerHTML = toastHTML;
+      }
+
+      // --- EVENT DELEGATION ---
+      document.addEventListener('click', e => {
+        const target = e.target.closest('[data-action]');
+        if (!target) return;
+        const { action, value } = target.dataset;
+        
+        switch (action) {
+          case 'change-tab': setState({ activeTab: value }); break;
+          case 'open-add-modal': handleOpenAddModal(); break;
+          case 'open-check-modal': handleOpenCheckModal(value); break;
+          case 'open-search-karton-modal': setState({ isSearchKartonModalOpen: true }); break;
+          case 'open-report-modal': setState({ isReportModalOpen: true, showReportPrompt: false }); break;
+          case 'close-modal': closeModal(); break;
+          case 'close-toast': setState({ showReportPrompt: false }); break;
+          case 'print-report': window.print(); break;
+          case 'toggle-form-boolean': 
+            handleFormDataChange(value, !state.formData[value]);
+            break;
+        }
+      });
+
+      document.addEventListener('input', e => {
+        const target = e.target.closest('[data-field]');
+        if (!target) return;
+        const { field } = target.dataset;
+        handleFormDataChange(field, target.value);
+      });
+
+      document.addEventListener('submit', e => {
+        const target = e.target.closest('form');
+        if (!target) return;
+        e.preventDefault();
+        const { id } = target;
+        if (id === 'add-form') handleSaveSickLeave(e);
+        if (id === 'check-form') handleDailyCheck(e);
+        if (id === 'search-karton-form') handleSearchKarton(e);
+      });
+
+      // --- INITIALIZATION ---
+      document.addEventListener('DOMContentLoaded', loadInitialData);
+    </script>
   </body>
 </html>
-

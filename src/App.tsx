@@ -30,50 +30,13 @@ import { motion, AnimatePresence } from 'motion/react';
 import { SickLeave, SickLeaveStatus, AgeCategory, LeaveType, DoctorFacsimile } from './types';
 import { cn } from './lib/utils';
 import { Printer } from 'lucide-react';
+import { supabase } from './lib/supabaseClient';
 
-// Mock initial data
-const INITIAL_DATA: SickLeave[] = [
-  {
-    id: '1',
-    medicalRecordNumber: '12345',
-    parentName: 'Марко Петровски',
-    childName: 'Петар Петровски',
-    ageCategory: 'under_3',
-    diagnosisCode: 'J06.9',
-    leaveType: '7_days',
-    openingDoctor: '169501',
-    hasLabResults: true,
-    hasSpecialistReport: false,
-    hasHospitalDays: false,
-    status: 'active',
-    startDate: '2024-02-15',
-    lastCheckedDate: '2024-02-18',
-    createdAt: '2024-02-15T10:00:00Z'
-  },
-  {
-    id: '2',
-    medicalRecordNumber: '67890',
-    parentName: 'Елена Стојановска',
-    childName: 'Ана Стојановска',
-    ageCategory: 'over_3',
-    diagnosisCode: 'Z74',
-    secondaryDiagnosisCode: 'R50.9',
-    leaveType: '15_days',
-    openingDoctor: '330825',
-    hasLabResults: true,
-    hasSpecialistReport: true,
-    hasHospitalDays: true,
-    hospitalDaysFrom: '2024-02-10',
-    hospitalDaysTo: '2024-02-12',
-    status: 'active',
-    startDate: '2024-02-10',
-    lastCheckedDate: '2024-02-19',
-    createdAt: '2024-02-10T09:30:00Z'
-  }
-];
+// Mock initial data is now removed, will fetch from Supabase
 
 export default function App() {
-  const [sickLeaves, setSickLeaves] = useState<SickLeave[]>(INITIAL_DATA);
+  const [sickLeaves, setSickLeaves] = useState<SickLeave[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
   const [activeTab, setActiveTab] = useState<'active' | 'history'>('active');
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [isCheckModalOpen, setIsCheckModalOpen] = useState(false);
@@ -84,6 +47,25 @@ export default function App() {
   const [searchKartonError, setSearchKartonError] = useState('');
   const [selectedLeave, setSelectedLeave] = useState<SickLeave | null>(null);
   const [searchQuery, setSearchQuery] = useState('');
+
+  useEffect(() => {
+    fetchSickLeaves();
+  }, []);
+
+  async function fetchSickLeaves() {
+    setIsLoading(true);
+    const { data, error } = await supabase
+      .from('sick_leaves')
+      .select('*')
+      .order('created_at', { ascending: false });
+
+    if (error) {
+      console.error('Error fetching sick leaves:', error);
+    } else {
+      setSickLeaves(data as SickLeave[]);
+    }
+    setIsLoading(false);
+  }
 
   const allChecksDone = useMemo(() => {
     const activeLeaves = sickLeaves.filter(s => s.status === 'active');
@@ -221,10 +203,9 @@ export default function App() {
     }
   };
 
-  const handleSaveSickLeave = (e: React.FormEvent) => {
+  const handleSaveSickLeave = async (e: React.FormEvent) => {
     e.preventDefault();
-    const newLeave: SickLeave = {
-      id: Math.random().toString(36).substr(2, 9),
+    const newLeaveData = {
       medicalRecordNumber: formData.medicalRecordNumber,
       parentName: formData.parentName,
       childName: formData.childName,
@@ -241,41 +222,58 @@ export default function App() {
       hospitalDaysTo: formData.hasHospitalDays ? formData.hospitalDaysTo : undefined,
       status: 'active',
       startDate: formData.startDate,
-      createdAt: new Date().toISOString(),
     };
-    setSickLeaves([newLeave, ...sickLeaves]);
-    setIsModalOpen(false);
+
+    const { data, error } = await supabase
+      .from('sick_leaves')
+      .insert([newLeaveData])
+      .select();
+
+    if (error) {
+      console.error('Error adding sick leave:', error);
+    } else if (data) {
+      setSickLeaves([data[0] as SickLeave, ...sickLeaves]);
+      setIsModalOpen(false);
+    }
   };
 
-  const handleDailyCheck = (e: React.FormEvent) => {
+  const handleDailyCheck = async (e: React.FormEvent) => {
     e.preventDefault();
     if (!selectedLeave) return;
 
-    setSickLeaves(prev => prev.map(item => {
-      if (item.id === selectedLeave.id) {
-        return {
-          ...item,
-          medicalRecordNumber: formData.medicalRecordNumber,
-          diagnosisCode: formData.diagnosisCode,
-          secondaryDiagnosisCode: formData.diagnosisCode === 'Z74' ? formData.secondaryDiagnosisCode : undefined,
-          leaveType: formData.leaveType,
-          openingDoctor: formData.openingDoctor,
-          closingDoctor: formData.closeSickLeave ? formData.closingDoctor : item.closingDoctor,
-          hasLabResults: formData.hasLabResults,
-          hasSpecialistReport: formData.hasSpecialistReport,
-          hasConsiliaryReport: formData.leaveType === 'commission' ? formData.hasConsiliaryReport : item.hasConsiliaryReport,
-          hasHospitalDays: formData.hasHospitalDays,
-          hospitalDaysFrom: formData.hasHospitalDays ? formData.hospitalDaysFrom : undefined,
-          hospitalDaysTo: formData.hasHospitalDays ? formData.hospitalDaysTo : undefined,
-          lastCheckedDate: format(new Date(), 'yyyy-MM-dd'),
-          status: formData.closeSickLeave ? 'completed' : 'active',
-          endDate: formData.closeSickLeave ? formData.endDate : item.endDate,
-        };
-      }
-      return item;
-    }));
-    setIsCheckModalOpen(false);
-    setSelectedLeave(null);
+    const updatedData = {
+        medicalRecordNumber: formData.medicalRecordNumber,
+        diagnosisCode: formData.diagnosisCode,
+        secondaryDiagnosisCode: formData.diagnosisCode === 'Z74' ? formData.secondaryDiagnosisCode : undefined,
+        leaveType: formData.leaveType,
+        openingDoctor: formData.openingDoctor,
+        closingDoctor: formData.closeSickLeave ? formData.closingDoctor : selectedLeave.closingDoctor,
+        hasLabResults: formData.hasLabResults,
+        hasSpecialistReport: formData.hasSpecialistReport,
+        hasConsiliaryReport: formData.leaveType === 'commission' ? formData.hasConsiliaryReport : selectedLeave.hasConsiliaryReport,
+        hasHospitalDays: formData.hasHospitalDays,
+        hospitalDaysFrom: formData.hasHospitalDays ? formData.hospitalDaysFrom : undefined,
+        hospitalDaysTo: formData.hasHospitalDays ? formData.hospitalDaysTo : undefined,
+        lastCheckedDate: format(new Date(), 'yyyy-MM-dd'),
+        status: formData.closeSickLeave ? 'completed' : 'active',
+        endDate: formData.closeSickLeave ? formData.endDate : selectedLeave.endDate,
+      };
+
+    const { data, error } = await supabase
+      .from('sick_leaves')
+      .update(updatedData)
+      .eq('id', selectedLeave.id)
+      .select();
+
+    if (error) {
+      console.error('Error updating sick leave:', error);
+    } else if (data) {
+        setSickLeaves(prev => prev.map(item => 
+          item.id === selectedLeave.id ? (data[0] as SickLeave) : item
+        ));
+        setIsCheckModalOpen(false);
+        setSelectedLeave(null);
+    }
   };
 
   return (
@@ -418,6 +416,9 @@ export default function App() {
         {/* List */}
         <div className="bg-white rounded-2xl border border-slate-200 shadow-sm overflow-hidden">
           <div className="overflow-x-auto">
+            {isLoading ? (
+              <div className="p-12 text-center text-slate-500">Вчитување...</div>
+            ) : (
             <table className="w-full text-left border-collapse">
               <thead>
                 <tr className="bg-slate-50/50 border-bottom border-slate-200">
@@ -578,6 +579,7 @@ export default function App() {
                 </AnimatePresence>
               </tbody>
             </table>
+            )}
           </div>
         </div>
       </main>
